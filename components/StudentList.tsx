@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
-import { Student } from '../types';
-import ResultView from './ResultView';
+import { Student } from '../types.ts';
+import ResultView from './ResultView.tsx';
 
 interface StudentListProps {
   students: Student[];
@@ -16,7 +15,7 @@ const StudentList: React.FC<StudentListProps> = ({ students, onDelete }) => {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden animate-fade-in">
       <div className="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
         <h3 className="text-lg font-bold text-slate-800">Stored Results</h3>
         <span className="bg-slate-200 px-3 py-1 rounded-full text-xs font-bold text-slate-600">
@@ -77,7 +76,7 @@ const StudentList: React.FC<StudentListProps> = ({ students, onDelete }) => {
                         👁️
                       </button>
                       <button 
-                        onClick={() => { if(confirm('Are you sure you want to delete this record?')) onDelete(s.id); }}
+                        onClick={() => { if(confirm('Are you sure?')) onDelete(s.id); }}
                         className="p-2 text-rose-400 hover:bg-rose-50 rounded-lg transition-colors"
                         title="Delete Record"
                       >

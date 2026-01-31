@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
-import { Student } from '../types';
-import ResultView from './ResultView';
+import { Student } from '../types.ts';
+import ResultView from './ResultView.tsx';
 
 interface StudentSearchProps {
   students: Student[];
@@ -27,7 +26,7 @@ const StudentSearch: React.FC<StudentSearchProps> = ({ students }) => {
 
   if (result) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fade-in">
         <button 
           onClick={() => setResult(null)}
           className="text-blue-600 font-bold flex items-center gap-2 mb-4 hover:underline"
@@ -40,7 +39,7 @@ const StudentSearch: React.FC<StudentSearchProps> = ({ students }) => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto py-20 px-4">
+    <div className="max-w-2xl mx-auto py-20 px-4 animate-fade-in">
       <div className="text-center mb-10">
         <h2 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">Student Portal</h2>
         <p className="text-slate-500 text-lg">Enter your examination roll number to download your digital report card.</p>
@@ -68,21 +67,6 @@ const StudentSearch: React.FC<StudentSearchProps> = ({ students }) => {
           ⚠️ {error}
         </div>
       )}
-
-      <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 opacity-40">
-        <div className="text-center p-6 border-2 border-dashed border-slate-200 rounded-3xl">
-          <div className="text-3xl mb-2">⚡</div>
-          <p className="text-xs font-bold uppercase">Fast Generation</p>
-        </div>
-        <div className="text-center p-6 border-2 border-dashed border-slate-200 rounded-3xl">
-          <div className="text-3xl mb-2">🛡️</div>
-          <p className="text-xs font-bold uppercase">Encrypted Data</p>
-        </div>
-        <div className="text-center p-6 border-2 border-dashed border-slate-200 rounded-3xl">
-          <div className="text-3xl mb-2">📄</div>
-          <p className="text-xs font-bold uppercase">Digital PDF Format</p>
-        </div>
-      </div>
     </div>
   );
 };
