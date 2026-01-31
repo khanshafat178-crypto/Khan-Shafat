@@ -6,14 +6,16 @@ interface LayoutProps {
   children: React.ReactNode;
   activeView: ViewType;
   setView: (view: ViewType) => void;
+  onLogout: () => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, activeView, setView }) => {
+const Layout: React.FC<LayoutProps> = ({ children, activeView, setView, onLogout }) => {
   const menuItems = [
     { id: 'DASHBOARD', label: 'Overview', icon: '📊' },
     { id: 'ADD_STUDENT', label: 'Add Result', icon: '📝' },
     { id: 'STUDENT_LIST', label: 'Records', icon: '📋' },
     { id: 'STUDENT_SEARCH', label: 'Portal', icon: '🔍' },
+    { id: 'SETTINGS', label: 'Settings', icon: '⚙️' },
   ];
 
   return (
@@ -41,13 +43,20 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setView }) => {
               <span className="font-semibold">{item.label}</span>
             </button>
           ))}
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-rose-500/10 hover:text-rose-400 transition-all mt-10"
+          >
+            <span className="text-xl">🚪</span>
+            <span className="font-semibold">Logout</span>
+          </button>
         </nav>
         <div className="p-6 border-t border-slate-800">
           <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700">
             <p className="text-[10px] font-black text-slate-500 uppercase mb-1">Database Status</p>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-              <span className="text-xs text-slate-300 font-medium">LocalStorage Connected</span>
+              <span className="text-xs text-slate-300 font-medium">LocalStorage Active</span>
             </div>
           </div>
         </div>

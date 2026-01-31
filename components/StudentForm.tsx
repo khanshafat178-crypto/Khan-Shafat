@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { SubjectMarks, Student } from '../types.ts';
 import { calculateResult, generateId } from '../utils.ts';
-import { generateStudentRemarks } from '../geminiService.ts';
+import { generateStudentRemarks, analyzeOldResult } from '../geminiService.ts';
 
 interface StudentFormProps {
   onAdd: (student: Student) => void;
@@ -11,6 +11,7 @@ interface StudentFormProps {
 const DEFAULT_SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'English', 'Computer Science'];
 
 const StudentForm: React.FC<StudentFormProps> = ({ onAdd }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     rollNo: '',
@@ -28,11 +29,51 @@ const StudentForm: React.FC<StudentFormProps> = ({ onAdd }) => {
   );
 
   const [loading, setLoading] = useState(false);
+  const [scanning, setScanning] = useState(false);
 
   const handleMarkChange = (index: number, field: keyof SubjectMarks, value: string | number) => {
     const updated = [...marks];
     updated[index] = { ...updated[index], [field]: field === 'subjectName' ? value : Number(value) || 0 };
     setMarks(updated);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setScanning(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const base64 = (reader.result as string).split(',')[1];
+        const data = await analyzeOldResult(base64, file.type);
+        
+        if (data) {
+          setFormData({
+            name: data.name || '',
+            rollNo: data.rollNo || '',
+            className: data.className || '',
+            section: data.section || '',
+          });
+          
+          if (data.subjects && Array.isArray(data.subjects)) {
+            setMarks(data.subjects.map((s: any) => ({
+              subjectName: s.subjectName || 'Subject',
+              theory: Number(s.theory) || 0,
+              practical: Number(s.practical) || 0,
+              maxMarks: Number(s.maxMarks) || 100
+            })));
+          }
+          alert('AI successfully imported student details!');
+        }
+      } catch (err) {
+        alert('Could not read image clearly. Please try again or fill manually.');
+      } finally {
+        setScanning(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,10 +113,40 @@ const StudentForm: React.FC<StudentFormProps> = ({ onAdd }) => {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-      <div className="p-8 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+      <div className="p-8 border-b border-slate-100 bg-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h3 className="text-xl font-bold text-slate-800">Generate New Result (नया परिणाम)</h3>
-          <p className="text-slate-500 text-sm">Fill student details to save in the local database.</p>
+          <p className="text-slate-500 text-sm">Fill details or use AI to import from old result card.</p>
+        </div>
+        
+        <div className="relative">
+          <input 
+            type="file" 
+            className="hidden" 
+            ref={fileInputRef} 
+            accept="image/*" 
+            onChange={handleFileUpload}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={scanning}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all border-2 ${
+              scanning 
+              ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed' 
+              : 'bg-white text-blue-600 border-blue-100 hover:border-blue-600 hover:shadow-lg'
+            }`}
+          >
+            {scanning ? (
+              <>
+                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                AI Scanning Card...
+              </>
+            ) : (
+              <>
+                <span>📤</span> Upload Old Result
+              </>
+            )}
+          </button>
         </div>
       </div>
       
@@ -150,9 +221,9 @@ const StudentForm: React.FC<StudentFormProps> = ({ onAdd }) => {
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
                   <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase">Subject</th>
-                  <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase">Theory</th>
-                  <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase">Practical</th>
-                  <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase">Max</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase text-center">Theory</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase text-center">Practical</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase text-center">Max</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -165,26 +236,26 @@ const StudentForm: React.FC<StudentFormProps> = ({ onAdd }) => {
                         onChange={(e) => handleMarkChange(index, 'subjectName', e.target.value)}
                       />
                     </td>
-                    <td className="px-6 py-3">
+                    <td className="px-6 py-3 text-center">
                       <input 
                         type="number" 
-                        className="w-20 px-3 py-2 rounded-lg border border-slate-100 outline-none focus:ring-1 focus:ring-blue-500"
+                        className="w-20 px-3 py-2 rounded-lg border border-slate-100 outline-none focus:ring-1 focus:ring-blue-500 text-center"
                         value={mark.theory}
                         onChange={(e) => handleMarkChange(index, 'theory', e.target.value)}
                       />
                     </td>
-                    <td className="px-6 py-3">
+                    <td className="px-6 py-3 text-center">
                       <input 
                         type="number"
-                        className="w-20 px-3 py-2 rounded-lg border border-slate-100 outline-none focus:ring-1 focus:ring-blue-500"
+                        className="w-20 px-3 py-2 rounded-lg border border-slate-100 outline-none focus:ring-1 focus:ring-blue-500 text-center"
                         value={mark.practical}
                         onChange={(e) => handleMarkChange(index, 'practical', e.target.value)}
                       />
                     </td>
-                    <td className="px-6 py-3">
+                    <td className="px-6 py-3 text-center">
                       <input 
                         type="number"
-                        className="w-20 px-3 py-2 rounded-lg border border-slate-100 outline-none focus:ring-1 focus:ring-blue-500"
+                        className="w-20 px-3 py-2 rounded-lg border border-slate-100 outline-none focus:ring-1 focus:ring-blue-500 text-center font-bold"
                         value={mark.maxMarks}
                         onChange={(e) => handleMarkChange(index, 'maxMarks', e.target.value)}
                       />
@@ -199,7 +270,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ onAdd }) => {
         <div className="flex justify-end pt-4">
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || scanning}
             className={`px-8 py-4 rounded-xl font-bold text-white shadow-xl transition-all ${
               loading ? 'bg-slate-400' : 'bg-blue-600 hover:bg-blue-700 hover:scale-105 active:scale-95'
             }`}

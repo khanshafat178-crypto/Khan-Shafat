@@ -22,4 +22,17 @@ export interface Student {
   createdAt: string;
 }
 
-export type ViewType = 'DASHBOARD' | 'ADD_STUDENT' | 'STUDENT_SEARCH' | 'STUDENT_LIST';
+export interface InstitutionInfo {
+  name: string;
+  address: string;
+  email: string;
+  phone: string;
+  logoUrl: string;
+}
+
+export interface User {
+  username: string;
+  password?: string;
+}
+
+export type ViewType = 'DASHBOARD' | 'ADD_STUDENT' | 'STUDENT_SEARCH' | 'STUDENT_LIST' | 'SETTINGS';
