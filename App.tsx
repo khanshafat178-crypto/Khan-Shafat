@@ -1,26 +1,24 @@
 
 import React, { useState, useEffect } from 'react';
-import Layout from './components/Layout';
-import Dashboard from './components/Dashboard';
-import StudentForm from './components/StudentForm';
-import StudentList from './components/StudentList';
-import StudentSearch from './components/StudentSearch';
-import { Student, ViewType } from './types';
-import { getStorageData, saveStorageData } from './utils';
+import Layout from './components/Layout.tsx';
+import Dashboard from './components/Dashboard.tsx';
+import StudentForm from './components/StudentForm.tsx';
+import StudentList from './components/StudentList.tsx';
+import StudentSearch from './components/StudentSearch.tsx';
+import { Student, ViewType } from './types.ts';
+import { getStorageData, saveStorageData } from './utils.ts';
 
 const App: React.FC = () => {
   const [view, setView] = useState<ViewType>('DASHBOARD');
   const [students, setStudents] = useState<Student[]>([]);
   const [initialized, setInitialized] = useState(false);
 
-  // Load data on mount
   useEffect(() => {
     const data = getStorageData();
     setStudents(data);
     setInitialized(true);
   }, []);
 
-  // Save data whenever it changes (after initialization)
   useEffect(() => {
     if (initialized) {
       saveStorageData(students);
@@ -53,7 +51,9 @@ const App: React.FC = () => {
 
   return (
     <Layout activeView={view} setView={setView}>
-      {renderContent()}
+      <div className="animate-in fade-in duration-500">
+        {renderContent()}
+      </div>
     </Layout>
   );
 };

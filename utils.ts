@@ -1,10 +1,16 @@
 
-import { Student, SubjectMarks } from './types';
+import { Student, SubjectMarks } from './types.ts';
+
+export const generateId = () => {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2);
+};
 
 export const calculateResult = (marks: SubjectMarks[]): Pick<Student, 'totalObtained' | 'totalMax' | 'percentage' | 'grade' | 'status'> => {
-  const totalObtained = marks.reduce((sum, m) => sum + m.theory + m.practical, 0);
-  const totalMax = marks.reduce((sum, m) => sum + m.maxMarks, 0);
-  const percentage = (totalObtained / totalMax) * 100;
+  const totalObtained = marks.reduce((sum, m) => sum + (Number(m.theory) || 0) + (Number(m.practical) || 0), 0);
+  const totalMax = marks.reduce((sum, m) => sum + (Number(m.maxMarks) || 100), 0);
+  
+  // Prevent division by zero
+  const percentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
   
   let grade = 'F';
   let status: 'Pass' | 'Fail' = 'Fail';
@@ -22,10 +28,19 @@ export const calculateResult = (marks: SubjectMarks[]): Pick<Student, 'totalObta
 };
 
 export const getStorageData = (): Student[] => {
-  const data = localStorage.getItem('eduresult_students');
-  return data ? JSON.parse(data) : [];
+  try {
+    const data = localStorage.getItem('eduresult_students');
+    return data ? JSON.parse(data) : [];
+  } catch (e) {
+    console.error("Failed to load data from database", e);
+    return [];
+  }
 };
 
 export const saveStorageData = (data: Student[]) => {
-  localStorage.setItem('eduresult_students', JSON.stringify(data));
+  try {
+    localStorage.setItem('eduresult_students', JSON.stringify(data));
+  } catch (e) {
+    console.error("Failed to save data to database", e);
+  }
 };
